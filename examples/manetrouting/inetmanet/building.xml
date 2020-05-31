@@ -1,0 +1,6 @@
+<environment>
+    <object position="min 230 390 0" orientation="0 0 0" shape="cuboid 320 150 5"
+            material="concrete" fill-color="0 0 255" opacity="0.7" name="Ariel Building"/>
+
+</environment>
+
