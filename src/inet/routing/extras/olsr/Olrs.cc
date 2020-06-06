@@ -747,7 +747,6 @@ Olsr::mpr_computation()
     // MPR computation should be done for each interface. See section 8.3.1
     // (RFC 3626) for details.
     bool increment;
-
     state_.clear_mprset();
 
     nbset_t N; nb2hopset_t N2;
@@ -1018,6 +1017,7 @@ Olsr::mpr_computation()
     // MPR computation should be done for each interface. See section 8.3.1
     // (RFC 3626) for details.
     state_.clear_mprset();
+    EV_DETAIL << "Started MPR computation..." << endl;
 
     nbset_t N; nb2hopset_t N2;
     // N is the subset of neighbors of the node, which are
