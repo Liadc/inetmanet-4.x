@@ -1226,6 +1226,7 @@ Olsr::mpr_computation()
             EV_DETAIL << N2.size () << " 2-hop neighbors left to cover! \n";
         }
     }
+    state_.print_mpr_set();
 }
 #endif
 ///

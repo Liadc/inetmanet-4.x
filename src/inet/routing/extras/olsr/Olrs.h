@@ -397,6 +397,9 @@ class Olsr : public ManetRoutingBase
 
     bool optimizedMid = false;
 
+    /// Determines if the node is an Attacker of node-isolation attack
+    bool isAttacker = false;
+
   protected:
 // Omnet INET vaiables and functions
     char nodeName[50];

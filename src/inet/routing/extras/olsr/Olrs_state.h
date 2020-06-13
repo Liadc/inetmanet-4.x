@@ -102,6 +102,11 @@ class Olsr_state : public cObject
     void            insert_ifaceassoc_tuple(Olsr_iface_assoc_tuple*);
     void            clear_all();
 
+
+    //Added functionalities:
+    void            print_mpr_set();
+
+
     Olsr_state() {}
     ~Olsr_state();
     Olsr_state(const Olsr_state &);

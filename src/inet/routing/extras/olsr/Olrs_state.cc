@@ -551,6 +551,18 @@ Olsr_state::Olsr_state(const Olsr_state& st)
 }
 
 
+/********** Olsr_state  Prints **********/
+void
+Olsr_state::print_mpr_set()
+{
+    for (auto it = mprset_.cbegin(); it != mprset_.cend(); it++)
+        {
+        EV_DETAIL << *it << ' ';
+        }
+
+}
+
+
 Olsr_state::~Olsr_state()
 {
     clear_all();
