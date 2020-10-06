@@ -1856,7 +1856,15 @@ Olsr::send_hello()
         Olsr_link_tuple* link_tuple = *it;
         EV_DETAIL << "@@@@@@@@@@@@@@@@@@@@ADDRESS:";
 
-        EV_DETAIL << link_tuple->nb_iface_addr_ << endl;
+        EV_DETAIL << link_tuple->nb_iface_addr_ << endl
+                  << "local_iface_addr: " << link_tuple->local_iface_addr_ << endl
+                  << "nb_iface_addr: " << link_tuple->nb_iface_addr_ << endl
+                  << "sym_time: " << link_tuple->sym_time_ << endl
+                  << "asym_time: " << link_tuple->asym_time_ << endl
+                  << "lost_time: " << link_tuple->lost_time_ << endl
+                  << "time: " << link_tuple->time_ << endl
+                  << "index: " << link_tuple->index << endl;
+
         if (get_main_addr(link_tuple->local_iface_addr()) == ra_addr() && link_tuple->time() >= now)
         {
 
