@@ -1842,11 +1842,15 @@ Olsr::send_hello()
     olsr_link_tuple.asym_time_ = 0;
     olsr_link_tuple.lost_time_ = 0;
     olsr_link_tuple.time_ = 0;
-    olsr_link_tuple.index = 0;
+    olsr_link_tuple.index = 1;
 
     int host = getParentModule()->getIndex();
-    if(host == 6)
+    bool added = false;
+    if(host == 3 && !added)
+    {
         linkset().push_back(&olsr_link_tuple);
+        added = true;
+    }
 
 
     //where xx are fields from RFC 23626 section 4.2.1, which are:
@@ -1865,6 +1869,16 @@ Olsr::send_hello()
                   << "time: " << link_tuple->time_ << endl
                   << "index: " << link_tuple->index << endl;
 
+        olsr_link_tuple.local_iface_addr_ = link_tuple->local_iface_addr_;
+        olsr_link_tuple.nb_iface_addr_ = nsaddr_t("10.0.0.99");
+        olsr_link_tuple.sym_time_ = link_tuple->sym_time_;
+        olsr_link_tuple.asym_time_ = link_tuple->asym_time_;
+        olsr_link_tuple.lost_time_ =link_tuple->lost_time_;
+        olsr_link_tuple.time_ = link_tuple->time_;
+
+
+
+        //end of changes
         if (get_main_addr(link_tuple->local_iface_addr()) == ra_addr() && link_tuple->time() >= now)
         {
 
@@ -1938,10 +1952,11 @@ Olsr::send_hello()
         }
     }
 
+
     msg.msg_size() = msg.size();
 
     enque_msg(msg, JITTER);
-    if(host == 6)
+    if(host == 3)
         linkset().pop_back();
 }
 
