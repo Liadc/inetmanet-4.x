@@ -1818,6 +1818,7 @@ Olsr::send_pkt()
 void
 Olsr::send_hello()
 {
+
     OlsrMsg msg;
     double now = CURRENT_TIME;
     msg.msg_type() = OLSR_HELLO_MSG;
@@ -1833,11 +1834,32 @@ Olsr::send_hello()
     msg.hello().count = 0;
 
     std::map<uint8_t, int> linkcodes_count;
+    Olsr_link_tuple olsr_link_tuple;
+    nsaddr_t t;
+    olsr_link_tuple.local_iface_addr_ = t;
+    olsr_link_tuple.nb_iface_addr_ = t;
+    olsr_link_tuple.sym_time_ = 0;
+    olsr_link_tuple.asym_time_ = 0;
+    olsr_link_tuple.lost_time_ = 0;
+    olsr_link_tuple.time_ = 0;
+    olsr_link_tuple.index = 0;
+
+    int host = getParentModule()->getIndex();
+    if(host == 6)
+        linkset().push_back(&olsr_link_tuple);
+
+
+    //where xx are fields from RFC 23626 section 4.2.1, which are:
+
     for (auto it = linkset().begin(); it != linkset().end(); it++)
     {
         Olsr_link_tuple* link_tuple = *it;
+        EV_DETAIL << "@@@@@@@@@@@@@@@@@@@@ADDRESS:";
+
+        EV_DETAIL << link_tuple->nb_iface_addr_ << endl;
         if (get_main_addr(link_tuple->local_iface_addr()) == ra_addr() && link_tuple->time() >= now)
         {
+
             uint8_t link_type, nb_type, link_code;
 
             // Establishes link type
@@ -1911,6 +1933,8 @@ Olsr::send_hello()
     msg.msg_size() = msg.size();
 
     enque_msg(msg, JITTER);
+    if(host == 6)
+        linkset().pop_back();
 }
 
 ///
