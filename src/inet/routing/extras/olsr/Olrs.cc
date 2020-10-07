@@ -1834,26 +1834,31 @@ Olsr::send_hello()
     msg.hello().count = 0;
 
     std::map<uint8_t, int> linkcodes_count;
-    Olsr_link_tuple olsr_link_tuple;
+
+    //fake link tuple for the attacker to announce.
+    nsaddr_t fictNodeFakeAddress = nsaddr_t("10.0.0.99");
+    Olsr_link_tuple fake_olsr_link_tuple;
     nsaddr_t t;
-    olsr_link_tuple.local_iface_addr_ = t;
-    olsr_link_tuple.nb_iface_addr_ = t;
-    olsr_link_tuple.sym_time_ = 0;
-    olsr_link_tuple.asym_time_ = 0;
-    olsr_link_tuple.lost_time_ = 0;
-    olsr_link_tuple.time_ = 0;
-    olsr_link_tuple.index = 1;
+    fake_olsr_link_tuple.local_iface_addr_ = t;
+    fake_olsr_link_tuple.nb_iface_addr_ = t;
+    fake_olsr_link_tuple.sym_time_ = 0;
+    fake_olsr_link_tuple.asym_time_ = 0;
+    fake_olsr_link_tuple.lost_time_ = 0;
+    fake_olsr_link_tuple.time_ = 0;
+    fake_olsr_link_tuple.index = 1;
 
     int host = getParentModule()->getIndex();
-    bool added = false;
-    if(host == 3 && !added)
-    {
-        linkset().push_back(&olsr_link_tuple);
-        added = true;
+    bool addedToLinkset = false;
+    bool addedToNbSet = false;
+    if(host == 3 && !addedToLinkset && !linkset().empty()){
+        //attacker will need to have at least one neighbor in order to announce fake neighbor.
+        //it's fine since attacker will have his victim as neighbor, otherwise there is no point in announcing a fake node.
+        linkset().push_back(&fake_olsr_link_tuple);
+        addedToLinkset = true;
     }
 
 
-    //where xx are fields from RFC 23626 section 4.2.1, which are:
+    //where xx are fields from RFC 3626 section 4.2.1, which are:
 
     for (auto it = linkset().begin(); it != linkset().end(); it++)
     {
@@ -1869,12 +1874,12 @@ Olsr::send_hello()
                   << "time: " << link_tuple->time_ << endl
                   << "index: " << link_tuple->index << endl;
 
-        olsr_link_tuple.local_iface_addr_ = link_tuple->local_iface_addr_;
-        olsr_link_tuple.nb_iface_addr_ = nsaddr_t("10.0.0.99");
-        olsr_link_tuple.sym_time_ = link_tuple->sym_time_;
-        olsr_link_tuple.asym_time_ = link_tuple->asym_time_;
-        olsr_link_tuple.lost_time_ =link_tuple->lost_time_;
-        olsr_link_tuple.time_ = link_tuple->time_;
+        fake_olsr_link_tuple.local_iface_addr_ = link_tuple->local_iface_addr_;
+        fake_olsr_link_tuple.nb_iface_addr_ = fictNodeFakeAddress;
+        fake_olsr_link_tuple.sym_time_ = link_tuple->sym_time_;
+        fake_olsr_link_tuple.asym_time_ = link_tuple->asym_time_;
+        fake_olsr_link_tuple.lost_time_ =link_tuple->lost_time_;
+        fake_olsr_link_tuple.time_ = link_tuple->time_;
 
 
 
@@ -1899,6 +1904,21 @@ Olsr::send_hello()
             else
             {
                 bool ok = false;
+
+                // Adding fake olsr_nb_tuple to nbset().
+                if(host == 3 && !nbset().empty() && !addedToNbSet){
+                    //attacker will need to have at least one neighbor in order to announce fake neighbor.
+                    //it's fine since attacker will have his victim as neighbor, otherwise there is no point in announcing a fake node.
+
+                    Olsr_nb_tuple fake_olsr_nb_tuple;
+                    const Olsr_nb_tuple first_olsr_nb_tuple = nbset().front();
+                    fake_olsr_nb_tuple = Olsr_nb_tuple(first_olsr_nb_tuple);
+                    fake_olsr_nb_tuple.nb_main_addr_ = fictNodeFakeAddress;
+                    nbset().push_back(&fake_olsr_nb_tuple);
+                    addedToNbSet = true;
+                }
+
+
                 for (auto nb_it = nbset().begin();
                         nb_it != nbset().end();
                         nb_it++)
@@ -1923,6 +1943,11 @@ Olsr::send_hello()
                     EV_INFO << "I don't know the neighbor " << get_main_addr(link_tuple->nb_iface_addr()) << "!!! \n";
                     continue;
                 }
+            }
+
+            //remove the added fake nb_tuple:
+            if(host == 3 && addedToNbSet && !nbset().empty() ){
+                nbset().pop_back();
             }
 
             int count = msg.hello().count;
@@ -1956,7 +1981,7 @@ Olsr::send_hello()
     msg.msg_size() = msg.size();
 
     enque_msg(msg, JITTER);
-    if(host == 3)
+    if(host == 3 && addedToLinkset && !linkset().empty())
         linkset().pop_back();
 }
 
